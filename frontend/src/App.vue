@@ -19,9 +19,9 @@ function setupLeaflet() {
     noWrap: true,
   });
 
-  L.tileLayer("/tiles/gfs/wind/current/{z}/{x}/{y}.png", {
-    minZoom: 3,
-    maxZoom: 4,
+  L.tileLayer("/tiles/gfs/wind/20251211/{z}/{x}/{y}.png", {
+    minZoom: 0,
+    maxZoom: 3,
     crs: L.CRS.Simple,
   }).addTo(map);
 

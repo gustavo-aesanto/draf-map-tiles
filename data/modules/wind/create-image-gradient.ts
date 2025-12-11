@@ -20,16 +20,16 @@ function generateColorGradient({
   phaseBlue,
 }: GenerateColorGradientParams) {
   const frequency = {
-    red: 0.2,
-    green: 0.1,
-    blue: 0.1
+    red: 0.05,
+    green: 0.18,
+    blue: 0.2
   };
   const width = 255 / 2;
   const center = 255 / 2;
 
   const red = Math.sin(frequency.red * point + phaseRed) * width + center;
   const green = Math.sin(frequency.green * point + phaseGreen) * width + center;
-  const blue = Math.sin(frequency.blue * point + phaseBlue) * width + center;
+  const blue = 255;
 
   return [red, green, blue];
 }
@@ -52,7 +52,7 @@ export function createImageGradient({
         point,
         phaseRed: 0,
         phaseBlue: 0,
-        phaseGreen: 0,
+        phaseGreen: 5.9,
       });
 
       colorsRGBAPixelByPixel[i + 0] = RGBA[0];
