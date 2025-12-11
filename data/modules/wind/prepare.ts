@@ -1,3 +1,17 @@
+/* Sharp */
+import sharp from "sharp";
+
+/* Node */
+import fs from "fs";
+
+import {
+  transformEntriesToObject,
+  Field,
+} from "../../sanitize/clean-grib-data";
+import { createImageGradient } from "./create-image-gradient";
+
+type Data = Array<Array<Field>>;
+
 type WindComponent = {
   Ni: number;
   Nj: number;
@@ -11,25 +25,26 @@ export type Variable = {
   v: WindComponent;
 };
 
-/* Sharp */
-import sharp from "sharp";
-
-/* Node */
-import fs from "fs";
-
-import { transformGRIBSetToObject } from "../../sanitize/clean-grib-data";
-import { createImageGradient } from "./create-image-gradient";
-
 /* ENV */
 const tmpDir = process.env.TMP_DIR;
 const filePath = `${tmpDir}/tmp.json`;
 
-const tmpJson = fs.readFileSync(filePath, "utf-8");
+const tmpJson = fs.readFileSync(filePath, "utf8");
 const rawData = JSON.parse(tmpJson);
 
+function findByParameterName(data: Data, parameterName: string) {
+  return data.find((messages) =>
+    messages.some(({ value }) => value === parameterName)
+  );
+}
+
 const wind: Variable = {
-  u: transformGRIBSetToObject(rawData.u),
-  v: transformGRIBSetToObject(rawData.v),
+  u: transformEntriesToObject(
+    findByParameterName(rawData.data.messages, "u-component of wind ")
+  ),
+  v: transformEntriesToObject(
+    findByParameterName(rawData.data.messages, "v-component of wind ")
+  ),
 };
 
 /* SETUP IMAGE */
@@ -42,17 +57,12 @@ const RGBA = createImageGradient({
   ...imageDimensions,
   data: wind,
 });
+
 const image = sharp(RGBA, {
   raw: {
     ...imageDimensions,
-    channels: 3,
+    channels: 4,
   },
-});
-
-image.resize({
-  fit: "contain",
-  width: imageDimensions.width,
-  height: imageDimensions.height,
 });
 
 await image.toFile(`${tmpDir}/image-test.jpeg`);
