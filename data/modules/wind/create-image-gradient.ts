@@ -1,4 +1,5 @@
 import { Variable } from "./prepare";
+import chroma from "chroma-js"
 
 type CreateImageGradientParams = {
   width: number;
@@ -13,26 +14,9 @@ type GenerateColorGradientParams = {
   phaseBlue: number;
 };
 
-function generateColorGradient({
-  point,
-  phaseRed,
-  phaseGreen,
-  phaseBlue,
-}: GenerateColorGradientParams) {
-  const frequency = {
-    red: 0.05,
-    green: 0.18,
-    blue: 0.2
-  };
-  const width = 255 / 2;
-  const center = 255 / 2;
+export const channels = 3;
 
-  const red = Math.sin(frequency.red * point + phaseRed) * width + center;
-  const green = Math.sin(frequency.green * point + phaseGreen) * width + center;
-  const blue = 255;
-
-  return [red, green, blue];
-}
+const colorGradient = chroma.scale("Spectral").domain([1,0]);
 
 export function createImageGradient({
   width,
@@ -41,24 +25,19 @@ export function createImageGradient({
 }: CreateImageGradientParams) {
   const { u, v } = data;
   const colorsRGBAPixelByPixel = [];
-
+  
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const i = (y * width + x) * 4;
+      const i = (y * width + x) * channels;
       const k = y * width + ((x + width / 2) % width);
 
-      const point = Math.sqrt(u.values[k] ** 2 + v.values[k] ** 2);
-      const RGBA = generateColorGradient({
-        point,
-        phaseRed: 0,
-        phaseBlue: 0,
-        phaseGreen: 5.9,
-      });
-
-      colorsRGBAPixelByPixel[i + 0] = RGBA[0];
-      colorsRGBAPixelByPixel[i + 1] = RGBA[1];
-      colorsRGBAPixelByPixel[i + 2] = RGBA[2];
-      colorsRGBAPixelByPixel[i + 3] = 255;
+      const point = Math.sqrt(u.values[k] ** 2 + v.values[k] ** 2) / Math.sqrt(u.maximum**2 + v.maximum**2);
+      
+      const RGB = colorGradient(point).rgb();
+      
+      colorsRGBAPixelByPixel[i + 0] = RGB[0];
+      colorsRGBAPixelByPixel[i + 1] = RGB[1];
+      colorsRGBAPixelByPixel[i + 2] = RGB[2];
     }
   }
 

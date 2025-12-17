@@ -8,7 +8,7 @@ import {
   transformEntriesToObject,
   Field,
 } from "../../sanitize/clean-grib-data";
-import { createImageGradient } from "./create-image-gradient";
+import { createImageGradient, channels } from "./create-image-gradient";
 
 type Data = Array<Array<Field>>;
 
@@ -27,7 +27,8 @@ export type Variable = {
 
 /* ENV */
 const tmpDir = process.env.TMP_DIR;
-const filePath = `${tmpDir}/tmp.json`;
+const filePath = `../${process.argv[2]}`;
+const outFile = process.argv[3];
 
 const tmpJson = fs.readFileSync(filePath, "utf8");
 const rawData = JSON.parse(tmpJson);
@@ -61,8 +62,14 @@ const RGBA = createImageGradient({
 const image = sharp(RGBA, {
   raw: {
     ...imageDimensions,
-    channels: 4,
+    channels,
   },
 });
 
-await image.toFile(`${tmpDir}/image-test.jpeg`);
+await image
+  .resize({
+    width: imageDimensions.width * 4,
+    height: imageDimensions.height * 4,
+    fit: "contain",
+  })
+  .toFile(`${tmpDir}/${outFile}`);
