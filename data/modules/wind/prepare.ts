@@ -35,7 +35,9 @@ const rawData = JSON.parse(tmpJson);
 
 function findByParameterName(data: Data, parameterName: string) {
   return data.find((messages) =>
-    messages.some(({ value }) => value === parameterName)
+    messages.some(
+      ({ value }) => value.toString().trim() === parameterName.trim()
+    )
   );
 }
 
