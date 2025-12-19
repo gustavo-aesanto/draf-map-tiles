@@ -2,13 +2,12 @@
 
 # SETUP 
 GFS_EXIBITION_DATE="20251216"
-GFS_FORECASTING="f000"
 GFS_RESOLUTION="0p25"
 GFS_CYCLE="00"
 
 PARAMETERS="&var_VGRD=on&var_UGRD=on"
 
-levels=("lev_950_mb=on" "lev_800_mb=on" "lev_250_mb=on" "lev_10_m_above_ground=on")
+levels=("lev_925_mb=on" "lev_850_mb=on" "lev_500_mb=on" "lev_250_mb=on" "lev_10_m_above_ground=on")
 
 TMP_DIR="tmp"
 JSON_DATA_STORAGE="frontend/data"
@@ -27,44 +26,49 @@ if  [ ! -d $TILES_DATA_STORAGE ]; then
     mkdir $TILES_DATA_STORAGE
 fi
 
-for level in "${levels[@]}"
+for forecast in {0..5}
 do
-    GFS_URL="https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_${GFS_RESOLUTION}.pl?dir=%2Fgfs.${GFS_EXIBITION_DATE}%2F${GFS_CYCLE}%2Fatmos&file=gfs.t${GFS_CYCLE}z.pgrb2.${GFS_RESOLUTION}.${GFS_FORECASTING}${PARAMETERS}&${level}"
+    forecast="$(printf f%03d $forecast)"
+    for level in "${levels[@]}"
+    do
+        GFS_URL="https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_${GFS_RESOLUTION}.pl?dir=%2Fgfs.${GFS_EXIBITION_DATE}%2F${GFS_CYCLE}%2Fatmos&file=gfs.t${GFS_CYCLE}z.pgrb2.${GFS_RESOLUTION}.${forecast}${PARAMETERS}&${level}"
 
-    # DOWNLOAD
-    TMP_GRIB="${TMP_DIR}/tmp_${level}.grib"
-    echo "======================================"
-    echo "STARTING DOWNLOAD"
-    echo "======================================"
-    curl $GFS_URL -o $TMP_GRIB
+        # DOWNLOAD
+        TMP_GRIB="${TMP_DIR}/tmp_${level}.grib"
+        echo "======================================"
+        echo "STARTING DOWNLOAD"
+        echo "======================================"
+        curl $GFS_URL -o $TMP_GRIB
 
-    # HANDLE WITH GRIB
-    GFS_JSON_PATH="${JSON_DATA_STORAGE}/gfs/wind/${GFS_EXIBITION_DATE}/${GFS_CYCLE}/${GFS_FORECASTING}"
-    if [ ! -d $GFS_JSON_PATH ]; then
-        mkdir -p ${GFS_JSON_PATH};
-    fi
-    
-    FILE_PATH="${GFS_JSON_PATH}/${level}.json"
-    SIMPLE_TMP_FILE="${TMP_DIR}/simple_tmp_${level}.grib"
-    
-    grib_set -r -s packingType=grid_simple "${TMP_GRIB}" "${SIMPLE_TMP_FILE}"
-    printf "{ \"data\": `grib_dump -j "${SIMPLE_TMP_FILE}"` }" > $FILE_PATH
+        # HANDLE WITH GRIB
+        GFS_JSON_PATH="${JSON_DATA_STORAGE}/gfs/wind/${GFS_EXIBITION_DATE}/${GFS_CYCLE}/${forecast}"
+        if [ ! -d $GFS_JSON_PATH ]; then
+            mkdir -p ${GFS_JSON_PATH};
+        fi
+        
+        FILE_PATH="${GFS_JSON_PATH}/${level}.json"
+        SIMPLE_TMP_FILE="${TMP_DIR}/simple_tmp_${level}.grib"
+        
+        grib_set -r -s packingType=grid_simple "${TMP_GRIB}" "${SIMPLE_TMP_FILE}"
+        printf "{ \"data\": `grib_dump -j "${SIMPLE_TMP_FILE}"` }" > $FILE_PATH
 
-    # GENERATE IMAGE
-    cd data
-    npm run run-wind $FILE_PATH "image-${level}.webp"
-    cd ..
+        # GENERATE IMAGE
+        cd data
+        npm run run-wind $FILE_PATH "image-${level}.webp"
+        cd ..
 
-    # GENERATE TILES
-    TILE_OUTDIR="${TILES_DATA_STORAGE}/gfs/wind/${GFS_EXIBITION_DATE}/${level}"
-    
-    echo $TILE_OUTDIR
-    rm -rf $TILE_OUTDIR
-    gdal2tiles.py \
-        --xyz --tiledriver=WEBP -p raster -z 3-5 -w leaflet \
-        "${TMP_DIR}/image-${level}.webp" $TILE_OUTDIR
+        # GENERATE TILES
+        TILE_OUTDIR="${TILES_DATA_STORAGE}/gfs/wind/${GFS_EXIBITION_DATE}/${level}/${forecast}"
+        
+        echo $TILE_OUTDIR
+        rm -rf $TILE_OUTDIR
+        gdal2tiles.py \
+            --xyz --tiledriver=WEBP -p raster -z 3-5 -w leaflet \
+            "${TMP_DIR}/image-${level}.webp" $TILE_OUTDIR
 
-    # REMOVE TMP FILES
-    rm $TMP_GRIB $SIMPLE_TMP_FILE "${TMP_DIR}/image-${level}.webp"
+        # REMOVE TMP FILES
+        rm $TMP_GRIB $SIMPLE_TMP_FILE "${TMP_DIR}/image-${level}.webp"
+
+    done
 
 done
