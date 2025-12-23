@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "run-wind": "node --env-file=.env --import=tsx modules/wind/prepare.ts"
+    "start": "node --env-file=.env --import=tsx main.ts"
   },
   "keywords": [],
   "type": "module",

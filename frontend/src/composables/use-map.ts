@@ -6,7 +6,7 @@ import { onMounted, reactive } from "vue";
 export function useMap({ url, dimensions }) {
   const state = reactive({
     date: "20251216",
-    level: "lev_10_m_above_ground=on",
+    level: "lev_925_mb=on",
     forecast: "f000",
   });
 
@@ -14,11 +14,7 @@ export function useMap({ url, dimensions }) {
     dimensions.width,
     dimensions.height,
   ];
-  const shadedLayer = L.tileLayer(url, {
-    ...state,
-    minZoom: 3,
-    maxZoom: 5,
-  });
+  let shadedLayer = null;
 
   function setupLeaflet() {
     const map = L.map("map", {
@@ -26,14 +22,26 @@ export function useMap({ url, dimensions }) {
       crs: L.CRS.Simple,
     });
 
+    const rc = new L.RasterCoords(map, imageDimensions);
+    var marker = new L.Marker(rc.unproject([1440, 720]));
+    marker.addTo(map);
+
+    shadedLayer = L.tileLayer(url, {
+      ...state,
+      minZoom: 4,
+      maxZoom: 5,
+      noWrap: true,
+      bounds: rc.getMaxBounds(),
+      maxNativeZoom: rc.zoomLevel(),
+    });
+
     shadedLayer.addTo(map);
 
-    const rc = new L.RasterCoords(map, imageDimensions);
-
-    map.setView(rc.unproject(imageDimensions), 1);
+    map.setView(rc.unproject([90, 460]), 4);
   }
 
   function setLayerOptions({ date, level, forecast }) {
+    console.log(date, level, forecast)
     shadedLayer.setUrl(
       `/tiles/gfs/wind/${date}/${level}/${forecast}/{z}/{x}/{y}.webp`
     );

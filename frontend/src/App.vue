@@ -42,7 +42,7 @@ const map = useMap({
 
 const SELECT_OPTIONS = {
   date: ["20251217", "20251216"],
-  level: ["lev_950_mb=on", "lev_800_mb=on", "lev_250_mb=on", "lev_10_m_above_ground=on"],
+  level: ["lev_925_mb=on", "lev_850_mb=on", "lev_500_mb=on", "lev_250_mb=on", "lev_10_m_above_ground=on"],
   forecast: Array.from({length: 6}, (_, key) => `f${key.toString().padStart(3, "0")}`)
 }
 </script>
