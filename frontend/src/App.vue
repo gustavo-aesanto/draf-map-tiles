@@ -1,25 +1,39 @@
 <template>
   <nav class="control">
-    <div class="form-field">
-      <label for="level">Level</label>
-      <select v-model="map.state.level" id="level">
-        <option v-for="value in SELECT_OPTIONS.level" :key="value" :value="value">{{ value }}</option>
-      </select>
-    </div>
+    <FormField
+      id="variable"
+      label="Variável"
+      :options="SELECT_OPTIONS.variables"
+      v-model="map.state.variable"
+    />
 
-    <div class="form-field">
-      <label for="date">Data</label>
-      <select v-model="map.state.date" id="date">
-        <option v-for="value in SELECT_OPTIONS.date" :key="value" :value="value">{{ value }}</option>
-      </select>
-    </div>
-    
-    <div class="form-field">
-      <label for="forecast">Horário de Exibição</label>
-      <select v-model="map.state.forecast" id="forecast">
-        <option v-for="value in SELECT_OPTIONS.forecast" :key="value" :value="value">{{ value }}</option>
-      </select>
-    </div>
+    <FormField
+      id="level"
+      label="Nível"
+      :options="SELECT_OPTIONS.levels"
+      v-model="map.state.level"
+    />
+
+    <FormField
+      id="date"
+      label="Data"
+      :options="SELECT_OPTIONS.dates"
+      v-model="map.state.date"
+    />
+
+    <FormField
+      id="forecast"
+      label="Horário de Exibição"
+      :options="SELECT_OPTIONS.forecasts"
+      v-model="map.state.forecast"
+    />
+
+    <FormField
+      id="speed"
+      label="Delay de animação (ms)"
+      :options="SELECT_OPTIONS.speeds"
+      v-model="map.state.animationTime"
+    />
 
     <button @click="map.update">Atualizar</button>
     <button @click="map.play">Play</button>
@@ -28,23 +42,39 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from "vue";
 import { useMap } from "@/composables/use-map";
 
+import FormField from "./components/FormField.vue";
+import { computed } from "vue";
 
 const map = useMap({
-  url: `/tiles/gfs/wind/{date}/{level}/{forecast}/{z}/{x}/{y}.webp`,
   dimensions: {
     width: 1440,
-    height: 720
-  }
-})
+    height: 720,
+  },
+});
 
-const SELECT_OPTIONS = {
-  date: ["20251217", "20251216"],
-  level: ["lev_925_mb=on", "lev_850_mb=on", "lev_500_mb=on", "lev_250_mb=on", "lev_10_m_above_ground=on"],
-  forecast: Array.from({length: 6}, (_, key) => `f${key.toString().padStart(3, "0")}`)
-}
+  const SELECT_OPTIONS = computed(() => {
+    const selectedVariableOptions = map.options.value[map.state.variable];
+
+    const variables = Object.keys(map.options.value);
+    const dates = selectedVariableOptions.reduce((acc, curr) => {
+      if (acc.includes(curr.date)) return acc;
+      return [...acc, curr.date];
+    }, []);
+    const levels = selectedVariableOptions.map((option) => option.level);
+    const forecasts = selectedVariableOptions[0]
+      ? selectedVariableOptions[0].forecasts
+      : [];
+
+    return {
+      variables,
+      dates,
+      levels,
+      forecasts,
+      speeds: [1500, 750, 325],
+    };
+  });
 </script>
 
 <style scoped>

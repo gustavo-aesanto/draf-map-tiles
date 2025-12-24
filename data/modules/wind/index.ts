@@ -4,13 +4,9 @@ import sharp from "sharp";
 /* Node */
 import fs from "fs";
 
-import {
-  transformEntriesToObject,
-  Field,
-} from "../../sanitize/clean-grib-data";
+import { transformEntriesToObject } from "../../sanitize/clean-grib-data";
 import { createImageGradient, channels } from "./create-image";
-
-type Data = Array<Array<Field>>;
+import { findByParameterName } from "../../sanitize/find-by-parameter-name";
 
 type WindComponent = {
   Ni: number;
@@ -31,14 +27,6 @@ const tmpDir = process.env.TMP_DIR;
 export async function create(filePath: string) {
   const tmpJson = fs.readFileSync("../" + filePath, "utf8");
   const rawData = JSON.parse(tmpJson);
-
-  function findByParameterName(data: Data, parameterName: string) {
-    return data.find((messages) =>
-      messages.some(
-        ({ value }) => value.toString().trim() === parameterName.trim()
-      )
-    );
-  }
 
   const wind: Variable = {
     u: transformEntriesToObject(

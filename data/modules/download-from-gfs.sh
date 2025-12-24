@@ -19,8 +19,8 @@ OUTDIR=$5
 levels=($6)
 
 TMP_DIR="tmp"
-JSON_DATA_STORAGE="frontend/data"
-TILES_DATA_STORAGE="frontend/tiles"
+JSON_DATA_STORAGE="server/data"
+TILES_DATA_STORAGE="server/tiles"
 
 # CREATE DIRS
 if [ ! -d $TMP_DIR ]; then
@@ -35,7 +35,7 @@ if  [ ! -d $TILES_DATA_STORAGE ]; then
     mkdir $TILES_DATA_STORAGE
 fi
 
-for forecast in {0..3}
+for forecast in {0..5}
 do
     forecast="$(printf f%03d $forecast)"
     for level in "${levels[@]}"
@@ -47,7 +47,7 @@ do
         echo "======================================"
         echo "STARTING DOWNLOAD"
         echo "======================================"
-        curl $GFS_URL -o $TMP_GRIB
+        curl $GFS_URL -o $TMP_GRIB 
 
         # HANDLE WITH GRIB
         GFS_JSON_PATH="${JSON_DATA_STORAGE}/gfs/${OUTDIR}/${GFS_EXIBITION_DATE}/${GFS_CYCLE}/${forecast}"
@@ -72,7 +72,7 @@ do
         echo $TILE_OUTDIR
         rm -rf $TILE_OUTDIR
         gdal2tiles.py \
-            --xyz --tiledriver=WEBP -p raster -z 4-5 -w leaflet \
+            --xyz --tiledriver=WEBP -p raster -z 3-5 -w leaflet \
             "${TMP_DIR}/image-tmp.webp" $TILE_OUTDIR
 
         # REMOVE TMP FILES
