@@ -1,8 +1,11 @@
+import { sphericalToEquiretangular } from "@/utils/spherical-to-equidistant.js";
 import axios from "axios";
 import L from "leaflet";
 import "leaflet-rastercoords";
 
-import { computed, onMounted, reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
+
+import { init } from "@/utils/animate.js";
 
 type Options = Record<
   "temperature" | "wind",
@@ -45,7 +48,7 @@ export function useMap({ dimensions }) {
   const state = reactive({
     variable: "wind",
     date: "20251216",
-    level: "lev_925_mb=on",
+    level: "lev_10_m_above_ground=on",
     forecast: "f000",
     animationTime: 1500,
   });
@@ -60,7 +63,7 @@ export function useMap({ dimensions }) {
   let rc = null;
 
   const layerOptions = {
-    minZoom: 4,
+    minZoom: 3,
     maxZoom: 5,
     noWrap: true,
   };
@@ -74,9 +77,11 @@ export function useMap({ dimensions }) {
     });
 
     rc = new L.RasterCoords(map, imageDimensions);
-    layerOptions['bounds'] = rc.getMaxBounds();
+    layerOptions["bounds"] = rc.getMaxBounds();
 
-    var marker = new L.Marker(rc.unproject([1440, 720]));
+    var marker = new L.Marker(
+      rc.unproject(sphericalToEquiretangular(69.6354163, -42.1736914))
+    );
     marker.addTo(map);
 
     shadedLayer = L.tileLayer(url, {
@@ -89,20 +94,13 @@ export function useMap({ dimensions }) {
     map.setView(rc.unproject([90, 460]), 1);
   }
 
-  function setLayerOptions(state) {
+  function setLayerOptions() {
     const layer = L.tileLayer(url, {
       ...state,
       ...layerOptions,
     });
 
-    map.addLayer(layer);
-
-    if (shadedLayer) {
-      map.once("rendercomplete", () => {
-        map.removeLayer(shadedLayer);
-        shadedLayer = layer;
-      });
-    }
+    layer.addTo(map);
   }
 
   function play() {
@@ -118,12 +116,30 @@ export function useMap({ dimensions }) {
   }
 
   function update() {
-    setLayerOptions(state);
+    setLayerOptions();
   }
 
   onMounted(() => {
     setupLeaflet();
     getOptions();
+
+    const mapPane = document.querySelector(".leaflet-map-pane");
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1440;
+    canvas.height = 720;
+    canvas.classList.add("particles-layer");
+    canvas.style = "z-index: 1000;"
+
+
+    const particlesPane = document.createElement("div");
+    particlesPane.classList.add("particles-pane");
+
+    particlesPane.appendChild(canvas);
+
+    mapPane.appendChild(particlesPane);
+
+    init(canvas);
   });
 
   return { setLayerOptions, state, play, update, options };

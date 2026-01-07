@@ -77,7 +77,7 @@ const map = useMap({
   });
 </script>
 
-<style scoped>
+<style>
 #map {
   width: 100vw;
   height: 100vh;
@@ -87,9 +87,6 @@ body {
   margin: 0;
 }
 
-.leaflet-tile-pane {
-  filter: hue-rotate(45deg) !important;
-}
 
 .control {
   width: 200px;
@@ -113,5 +110,15 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
+}
+
+.leaflet-pane .particles-pane {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
