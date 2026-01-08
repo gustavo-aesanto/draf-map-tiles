@@ -18,9 +18,9 @@ OUTDIR=$5
 
 levels=($6)
 
-TMP_DIR="tmp"
-JSON_DATA_STORAGE="server/data"
-TILES_DATA_STORAGE="server/tiles"
+TMP_DIR="./tmp"
+JSON_DATA_STORAGE="./server/data"
+TILES_DATA_STORAGE="./server/tiles"
 
 # CREATE DIRS
 if [ ! -d $TMP_DIR ]; then

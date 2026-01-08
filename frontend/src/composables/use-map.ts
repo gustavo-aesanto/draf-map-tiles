@@ -47,7 +47,7 @@ export function useMap({ dimensions }) {
 
   const state = reactive({
     variable: "wind",
-    date: "20251216",
+    date: "20260107",
     level: "lev_10_m_above_ground=on",
     forecast: "f000",
     animationTime: 1500,

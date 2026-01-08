@@ -1,4 +1,4 @@
-import { data } from "../../../server/data/gfs/wind/20251216/00/f000/lev_10_m_above_ground=on.json";
+import { data } from "../../../server/data/gfs/wind/20260107/00/f000/lev_10_m_above_ground=on.json";
 
 export function windIntensityColorScale(step, maxWindIntensity) {
   const colors = [];
@@ -23,15 +23,16 @@ export function init(canvas) {
   const width = canvas.width;
   const height = canvas.height;
 
-  const metersByPixelEquador = 40075000 / width;
-
+  
+  const INTENSITY_SCALE_STEP = 10;
+  
   const MAX_PARTICLE_AGE = 100;
   const PARTICLE_MULTIPLIER = 7;
-  const INTENSITY_SCALE_STEP = 10;
   const PARTICLE_LINE_WIDTH = 1;
   const FRAME_RATE = 40; // ms
-
+  
   function conversion(u, v, y) {
+    const metersByPixelEquador = 40075000 / width;
     const latitude = (((360 - y) / 4) * Math.PI) / 180;
     const DEGREE_IN_RADIANS_85_94366927 = 1.5;
     let latRad = Math.max(
@@ -81,7 +82,9 @@ export function init(canvas) {
 
     function get(x, y) {
       const index = (Math.round(y) * width) + Math.round(x);
-      return vectorField[index] || [NaN, NaN, null];
+      const k = Math.round(y) * width + ((Math.round(x) + width / 2) % width);
+
+      return vectorField[k] || [NaN, NaN, null];
     }
 
     function isDefined(x, y) {
@@ -127,8 +130,8 @@ export function init(canvas) {
         if (intensity === null) {
           particle.age = MAX_PARTICLE_AGE;
         } else {
-          const toX = x + deltaX * 12;
-          const toY = y - deltaY * 12;
+          const toX = x + deltaX * 50;
+          const toY = y - deltaY * 50;
 
           if (vectorField.isDefined(toX, toY)) {
             particle.toX = toX;
@@ -167,8 +170,6 @@ export function init(canvas) {
         }
       });
     }
-
-    console.log(vectorField.get(0, 0));
 
     function frame() {
       try {

@@ -9,7 +9,7 @@ type CreateImageGradientParams = {
 
 export const channels = 3;
 
-const colorGradient = chroma.scale("RdYlBu").domain([1, 0]);
+const colorGradient = chroma.scale(["#760f13", "#e81416", "#faeb36", "#79c314", "#487de7", "#4b369d"]).domain([1, 0]);
 
 export function createImageGradient({
   width,
