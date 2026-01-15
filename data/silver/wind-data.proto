@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package winddata;
+
+message WindData {
+  Header header = 1;
+  CompressedWindValues values = 2;
+}
+
+message Header {
+  uint32 data_date = 1;
+  uint32 number_of_values = 2;
+  float maximum = 3;
+  float minimum = 4;
+  string name = 5;
+  uint32 ni = 6;
+  uint32 nj = 7;
+  string units = 8;
+}
+
+// Versão quantizada - converte floats para int16
+message CompressedWindValues {
+  // Parâmetros de quantização
+  float u_min = 1;
+  float u_max = 2;
+  float v_min = 3;
+  float v_max = 4;
+  
+  // Valores quantizados como int16 (-32768 a 32767)
+  // Economiza 50% vs float32
+  repeated sint32 u = 5 [packed=true];
+  repeated sint32 v = 6 [packed=true];
+}

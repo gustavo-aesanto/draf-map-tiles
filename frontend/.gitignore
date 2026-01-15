@@ -34,7 +34,3 @@ coverage
 
 # Vitest
 __screenshots__/
-
-# Files
-tiles
-data
