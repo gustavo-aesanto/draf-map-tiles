@@ -9,7 +9,8 @@ export type Field = {
     | "Ni"
     | "Nj"
     | "parameterUnits"
-    | "cfVarName";
+    | "cfVarName"
+    | "parameterName";
   value: number | string | Array<number>;
 };
 
@@ -82,9 +83,9 @@ export class Clean {
           objectDataOfSecondComponent.parameterUnits,
       },
       values: {
-        [`${objectDataOfFirstComponent.cfVarName}`]:
+        [`${objectDataOfFirstComponent.parameterName[0]}`]:
           objectDataOfFirstComponent.values,
-        [`${objectDataOfSecondComponent.cfVarName}`]:
+        [`${objectDataOfSecondComponent.parameterName[0]}`]:
           objectDataOfSecondComponent.values,
       },
     };
@@ -92,7 +93,5 @@ export class Clean {
     return formattedData;
   }
 
-  public titleFormat() {
-    
-  }
+  public titleFormat() {}
 }

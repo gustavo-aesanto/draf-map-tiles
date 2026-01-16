@@ -2,14 +2,15 @@
 HOUR=$(date +%H)
 CYCLE_NUM=$((10#$HOUR / 6 * 6))
 
-GFS_EXIBITION_DATE=$(date +"%Y%m%d")
+GFS_EXHIBITION_DATE=$(date +"%Y%m%d")
 GFS_RESOLUTION=$1
 GFS_CYCLE=$(printf "%02d" "$CYCLE_NUM")
 
 PARAMETERS=$2
 OUTDIR=$3
 
-levels=($6)
+levels=($4)
+echo $levels
 
 TMP_DIR="tmp"
 JSON_DATA_STORAGE="data/raw"
@@ -35,12 +36,12 @@ if [ ! -d $GFS_JSON_PATH ]; then
     mkdir $GFS_JSON_PATH
 fi
 
-for forecast in {0..3}
+for forecast in {0..2}
 do
     forecast="$(printf f%03d $forecast)"
     for level in "${levels[@]}"
     do
-        GFS_URL="https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_${GFS_RESOLUTION}.pl?dir=%2Fgfs.${GFS_EXIBITION_DATE}%2F${GFS_CYCLE}%2Fatmos&file=gfs.t${GFS_CYCLE}z.pgrb2.${GFS_RESOLUTION}.${forecast}${PARAMETERS}&${level}"
+        GFS_URL="https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_${GFS_RESOLUTION}.pl?dir=%2Fgfs.${GFS_EXHIBITION_DATE}%2F${GFS_CYCLE}%2Fatmos&file=gfs.t${GFS_CYCLE}z.pgrb2.${GFS_RESOLUTION}.${forecast}${PARAMETERS}&${level}"
         
         # DOWNLOAD
         TMP_GRIB="${TMP_DIR}/tmp_${level}.grib"
@@ -50,7 +51,7 @@ do
         
         curl $GFS_URL -o $TMP_GRIB
         
-        FILE_PATH="${GFS_JSON_PATH}/${GFS_EXIBITION_DATE}-${GFS_CYCLE}-${forecast}-${level}.json"
+        FILE_PATH="${GFS_JSON_PATH}/${GFS_EXHIBITION_DATE}-${GFS_CYCLE}-${forecast}-${level}.json"
         SIMPLE_TMP_FILE="${TMP_DIR}/simple_tmp_${level}.grib"
         
         grib_set -r -s packingType=grid_simple "${TMP_GRIB}" "${SIMPLE_TMP_FILE}"

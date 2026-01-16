@@ -1,22 +1,20 @@
-import data from "../data/raw/gfs/wind/20260107-00-f002-lev_500_mb=on.json";
 import { jsonToProtobuf, protobufToJson } from "./wind-data-converter.js";
-import { Clean } from "./clean-data";
+import { Clean, Field } from "./clean-data";
 import { Compress } from "./compress";
 
+type Data = {
+  data: {
+    messages: Array<Array<Field>>;
+  };
+};
+
 const clean = new Clean();
-const convert = new Compress();
-
-// await convert.compressJsonWithBrotli(clean.formatVector(data.data.messages), 'wind-20260107-00-f002-500-mb');
-
-await jsonToProtobuf(clean.formatVector(data.data.messages), "wind.pb.gz", {
-  compress: true, // gzip
-  quantize: true, // int16
-});
-
-// Carregar
-const loaded = await protobufToJson("wind.pb.gz", {
-  compressed: true,
-  quantized: true,
-});
-
-console.log(loaded);
+const compress = new Compress(
+  "data/cleaned/gfs/wind",
+  async (buffer, filename) => {
+    const json = JSON.parse(buffer.toString());
+    const cleanedJson = clean.formatVector(json.data.messages);
+    await jsonToProtobuf(cleanedJson, filename);
+  }
+);
+compress.start("data/raw/gfs/wind");
